@@ -83824,12 +83824,27 @@ ${memoriesContext}
 
 Guidelines:
 - Be brief (1-2 sentences), warm, and encouraging.
-- You have tools to log hydration, log sleep, create habits, and complete habits. Use them immediately when the user reports logs or habits.
-- When you use a tool, confirm the action directly in your response (e.g. "Great. I've added 500ml to today's hydration progress." or "I've updated your sleep log.").`;
+- You have tools to log hydration, log sleep, create habits, and complete habits. Use them immediately when the user reports logs or habits.`;
       fullResponse = await runGeminiChat(systemPrompt, updatedHistory.slice(0, -1), userText, user.id);
       res.write(`data: ${JSON.stringify({ type: "transcript", data: fullResponse })}
 
 `);
+      if (process.env.OPENAI_API_KEY) {
+        try {
+          const ttsResponse = await openai.audio.speech.create({
+            model: "tts-1",
+            voice: "alloy",
+            input: fullResponse,
+            response_format: "mp3"
+          });
+          const audioData = Buffer.from(await ttsResponse.arrayBuffer()).toString("base64");
+          res.write(`data: ${JSON.stringify({ type: "audio", data: audioData, format: "mp3" })}
+
+`);
+        } catch (ttsErr) {
+          console.error("OpenAI TTS failed for Gemini response:", ttsErr);
+        }
+      }
       await db.insert(messages).values({ conversationId: id, role: "assistant", content: fullResponse });
     } else {
       const audioBuffer = Buffer.from(parsed.data.audio, "base64");
