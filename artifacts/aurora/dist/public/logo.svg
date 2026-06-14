@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" fill="none">
+  <rect width="120" height="120" rx="28" fill="hsl(170, 72%, 38%)"/>
+  <!-- Sparkle / Aurora star shape -->
+  <path d="M60 20 L64 52 L96 60 L64 68 L60 100 L56 68 L24 60 L56 52 Z" fill="white" opacity="0.95"/>
+  <!-- Small accent sparkles -->
+  <circle cx="88" cy="32" r="4" fill="white" opacity="0.6"/>
+  <circle cx="32" cy="88" r="4" fill="white" opacity="0.6"/>
+  <circle cx="92" cy="88" r="2.5" fill="white" opacity="0.4"/>
+  <circle cx="28" cy="32" r="2.5" fill="white" opacity="0.4"/>
+</svg>

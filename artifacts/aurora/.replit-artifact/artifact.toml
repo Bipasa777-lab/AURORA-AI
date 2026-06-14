@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "Aurora – Health Companion"
+version = "1.0.0"
+id = "artifacts/aurora"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 24397
+
+[services.development]
+run = "pnpm --filter @workspace/aurora run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/aurora", "run", "build" ]
+publicDir = "artifacts/aurora/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "24397"
+BASE_PATH = "/"
