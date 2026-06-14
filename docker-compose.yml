@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: aurora-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: health_companion
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runner-api
+    container_name: aurora-api
+    ports:
+      - "8080:8080"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/health_companion
+      - PORT=8080
+      - BYPASS_CLERK=true
+      - OPENAI_API_KEY=dummy_key
+    depends_on:
+      db:
+        condition: service_healthy
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runner-web
+    container_name: aurora-web
+    ports:
+      - "8082:8082"
+    environment:
+      - PORT=8082
+      - BASE_PATH=/
+      - VITE_BYPASS_CLERK=true
+    depends_on:
+      - api
+
+volumes:
+  postgres_data:

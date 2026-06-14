@@ -1,0 +1,673 @@
+# Aurora – Mobile Health Companion Hackathon
+
+# Project Overview
+
+Project Aurora is a mobile-first health companion designed to help users better understand themselves if they are healthy or unhealthy through hydration tracking, sleep tracking, habit building, nutrition awareness, personalized insights, and an intelligent health companion.
+
+Most health applications focus on collecting data.
+
+Project Aurora focuses on helping users understand what that data means and how they can use it to improve their daily lives.
+
+The goal of this hackathon is to build a functional mobile prototype that demonstrates the core product experience of a modern AI-powered health companion.
+
+The application should combine:
+
+- Health Tracking
+- Personalized Insights
+- Voice AI
+- Habit Formation
+- Health Progress Monitoring
+
+into a single experience that feels personal, intelligent, and enjoyable to use daily.
+
+This is not about building a production-ready application.
+
+This is about demonstrating:
+
+- Product Thinking
+- Mobile Development Skills
+- UI/UX Design
+- Backend Architecture
+- AI Integration
+- Execution Ability
+
+---
+
+# 🎯 What You Need to Build
+
+Create a functional mobile application prototype for Project Aurora that includes the flows described below.
+
+The application should feel like a personal health companion rather than a traditional health tracker.
+
+The objective is to create an experience users would genuinely want to use every day.
+
+---
+
+# Scope Rules (Important)
+
+- Focus on core product functionality.
+- Features may be simplified but should work end-to-end.
+- UI/UX quality will play a major role in evaluation.
+- Backend functionality should be API-driven wherever possible.
+- Voice AI functionality is required.
+- Device integrations are optional.
+- Participants are free to introduce additional features if they create meaningful value.
+- The goal is to deliver a polished and functional prototype.
+
+---
+
+# 📱 Application Flow
+
+## 1. Intro / Landing Experience
+
+When users open the application they should see:
+
+"Understand yourself better every day."
+
+Followed by onboarding screens introducing:
+
+### Screen One
+
+Meet your personal health companion.
+
+### Screen Two
+
+Track hydration, sleep, habits, and nutrition.
+
+### Screen Three
+
+Receive personalized daily insights.
+
+### Screen Four
+
+Build healthier routines through consistency.
+
+### Screen Five
+
+Learn more about yourself every day.
+
+The experience should feel premium, modern, and calm.
+
+**Note:** The examples and content provided below are intended as reference templates only and should not be treated as fixed requirements. Think creatively and make thoughtful product decisions that best align with the overall vision, user experience, and goals of the application.
+
+---
+
+## 2. Authentication
+
+Users should be able to:
+
+- Sign up using Email
+- Login using Email
+- Continue with Google
+- Continue with Apple
+
+Authentication should be simple and frictionless.
+
+---
+
+## 3. User Onboarding
+
+Collect:
+
+### Personal Information
+
+- Name
+- Age
+- Gender
+- Height
+- Weight
+
+### Lifestyle Information
+
+- Wake-up Time
+- Bedtime
+- Activity Level
+
+### Health Goals
+
+Users may choose goals such as:
+
+- Improve Hydration
+- Sleep Better
+- Build Better Habits
+- Eat Healthier
+- Improve Energy Levels
+- Improve Consistency
+
+### Notification Preferences
+
+Users can enable:
+
+- Hydration Reminders
+- Sleep Reminders
+- Habit Reminders
+- Daily Insights
+
+**Note:** The flows, features, and examples described above are not hard requirements. Participants are encouraged to adapt, improve, simplify, or expand them based on their product thinking and implementation approach, as long as they remain aligned with the core objectives of the project.
+
+---
+
+## 4. Health Data Setup
+
+Users should choose how they want to track health information.
+
+### Manual Tracking
+
+Users can manually track:
+
+- Water Intake
+- Sleep
+- Habits
+- Meals
+
+### Device Integrations (Bonus)
+
+Participants may integrate:
+
+- Apple Health
+- Health Connect
+- Fitbit
+- Garmin
+
+Successful integrations will receive additional consideration during evaluation.
+
+---
+
+## 5. Home Dashboard
+
+The dashboard acts as the central screen of the application.
+
+Everything important should be visible from one place.
+
+The dashboard should clearly communicate health progress while remaining simple and encouraging.
+
+### Daily Insight Card
+
+Example:
+
+"You slept 1 hour less than your weekly average. Prioritize hydration today."
+
+### Hydration Card
+
+Displays:
+
+- Daily Goal
+- Current Progress
+- Remaining Goal
+
+### Sleep Card
+
+Displays:
+
+- Last Night's Sleep
+- Weekly Average
+- Sleep Consistency
+
+### Habit Card
+
+Displays:
+
+- Habits Due Today
+- Completed Habits
+- Progress Percentage
+
+### Nutrition Card
+
+Displays:
+
+- Meals Logged
+- Daily Nutrition Summary
+
+### Streak Card
+
+Displays:
+
+- Active Streaks
+- Recent Achievements
+- Longest Streaks
+
+---
+
+## 6. Hydration Module
+
+### Purpose
+
+Help users build healthier hydration habits.
+
+### Features
+
+- Daily Water Goal
+- Quick Add Buttons
+- Custom Water Entry
+- Hydration History
+
+### Virtual Water Bottle
+
+Implement a visual bottle that fills throughout the day.
+
+This should be one of the primary engagement features.
+
+### Hydration Insights
+
+Examples:
+
+- You are ahead of today's hydration goal.
+- Your hydration consistency improved this week.
+
+---
+
+## 7. Sleep Module
+
+### Purpose
+
+Help users understand their sleep patterns.
+
+### Features
+
+- Sleep Logging
+- Sleep History
+- Weekly Trends
+- Monthly Trends
+
+### Sleep Analysis
+
+Display:
+
+- Sleep Duration
+- Sleep Consistency
+- Sleep Trends
+
+### Sleep Insights
+
+Examples:
+
+- You sleep better when going to bed before 11 PM.
+- Your average sleep increased this week.
+
+---
+
+## 8. Habit Tracking Module
+
+### Purpose
+
+Help users build consistency.
+
+### Habit Creation
+
+Users can create habits such as:
+
+- Reading
+- Meditation
+- Stretching
+- Walking
+- Journaling
+- Supplements
+- Early Bedtime
+
+### Habit Management
+
+Users can:
+
+- Create Habits
+- Complete Habits
+- Skip Habits
+- Pause Habits
+- Edit Habits
+
+### Habit Insights
+
+Examples:
+
+- Morning habits are completed more consistently.
+- You completed this habit for five consecutive days.
+
+---
+
+## 9. Nutrition Module
+
+### Purpose
+
+Increase awareness around eating patterns.
+
+Users can log:
+
+- Breakfast
+- Lunch
+- Dinner
+- Snacks
+
+Display:
+
+- Calories
+- Protein
+- Carbohydrates
+- Fat
+
+The focus should be awareness rather than strict calorie counting.
+
+---
+
+## 10. 🎙️ Agentic Health Companion (Core Feature)
+
+This is the most important feature of the assignment.
+
+The companion should feel like a personal health coach rather than a chatbot.
+
+### Voice-to-Voice Interaction (Required)
+
+Users should be able to:
+
+- Speak naturally
+- Receive spoken responses
+- Have conversations about their health
+
+Examples:
+
+"How am I doing this week?"
+
+"Did I drink enough water today?"
+
+"How can I improve my sleep?"
+
+"What habits should I focus on?"
+
+---
+
+### Agent Actions (Required)
+
+The AI should be capable of updating information through conversation.
+
+Examples:
+
+User:
+
+"I drank 500ml water."
+
+AI:
+
+"Great. I've added 500ml to today's hydration progress."
+
+User:
+
+"I slept 7 hours last night."
+
+AI:
+
+"I've updated your sleep log."
+
+User:
+
+"Create a habit to meditate every morning."
+
+AI:
+
+"Done. I've created the habit."
+
+The goal is to demonstrate an AI agent that can understand and take actions.
+
+---
+
+### Personalized Recommendations
+
+The AI should use available user information to provide personalized suggestions whenever possible.
+
+---
+
+## 11. Health Memory System (Optional)
+
+Implement a simple memory layer that stores useful observations.
+
+Examples:
+
+- User often misses hydration goals.
+- User sleeps better on weekends.
+- User completes morning habits consistently.
+
+The goal is to create the feeling:
+
+"Aurora understands me."
+
+---
+
+## 12. Progress & Reports (Optional)
+
+Users should be able to view:
+
+### Weekly Reports
+
+- Hydration Progress
+- Sleep Progress
+- Habit Progress
+- Nutrition Progress
+
+### Monthly Reports
+
+- Consistency Score
+- Achievements
+- Behavior Trends
+- Areas for Improvement
+
+Reports should be visual and easy to understand.
+
+---
+
+## 13. Streak System (Optional)
+
+Track:
+
+- Hydration Streaks
+- Sleep Streaks
+- Habit Streaks
+- Nutrition Streaks
+
+Users may unlock:
+
+- Badges
+- Milestones
+- Achievements
+
+The focus is encouragement rather than competition.
+
+---
+
+## 14. Notifications (Optional)
+
+Implement personalized reminders.
+
+Examples:
+
+Hydration:
+
+"You're one glass away from today's goal."
+
+Sleep:
+
+"You usually begin your bedtime routine around this time."
+
+Habits:
+
+"You've completed this habit for five days in a row."
+
+Daily Insight:
+
+"A new health insight is ready."
+
+Basic implementation is acceptable.
+
+---
+
+## 15. Profile & Settings
+
+Users should be able to manage:
+
+## Profile
+
+- Personal Information
+- Goals
+- Preferences
+
+## Settings
+
+- Notification Settings
+- Device Connections
+- Measurement Units
+- Privacy Settings
+
+---
+
+# 🎨 Design & UX Guidelines
+
+The product should feel:
+
+- Personal
+- Intelligent
+- Supportive
+- Premium
+- Modern
+
+The product should never feel:
+
+- Complicated
+- Stressful
+- Clinical
+- Overwhelming
+
+Focus heavily on:
+
+- Simplicity
+- Visual Hierarchy
+- Delightful Interactions
+- Smooth Navigation
+
+UI/UX quality will play a significant role in judging.
+
+---
+
+# 🧰 Tech Expectations
+
+## Mobile Application (Required)
+
+React Native + Expo
+
+## Backend
+
+Participants may use:
+
+- Firebase
+- Supabase
+- Node.js
+- Python
+
+## Database
+
+- PostgreSQL
+- MongoDB
+- Firebase
+- Supabase
+
+## AI
+
+Participants are free to use any AI provider or open-source model.
+
+Examples include:
+
+- OpenAI
+- Anthropic Claude
+- Google Gemini
+- DeepSeek
+- Qwen
+- Llama
+- Mistral
+- Groq
+- Together AI
+- Other Open-Source Models and Providers (including models available through Hugging Face)
+
+Participants are encouraged to choose the tools and models that best support their implementation of the AI Health Companion.
+
+---
+
+# 📝 Points to Note
+
+1. **UI/UX quality is extremely important.**
+2. **Voice AI functionality is required.**
+3. Core flows must work.
+4. Backend should be functional and API-driven.
+5. A focused MVP is better than an unfinished large product.
+6. **Device integrations are optional, but implementing them may provide an advantage during evaluation.**
+7. Participants are free to use AI tools to increase productivity.
+8. Product thinking and execution quality matter more than feature count.
+9. Discipline and commitment throughout the challenge will be valued.
+
+---
+
+# 📤 Submission Instructions
+
+## Required Submission
+
+### 1. Demo Video (3–5 Minutes)
+
+Walk through your entire product. 
+
+### 2. Functional Mobile Application
+
+Submit one of the following:
+
+- APK Build
+- Android Installation Link
+- iOS Build
+- TestFlight Link
+
+---
+
+## iOS Testing Process
+
+If your submission qualifies for final evaluation:
+
+- Our team may provide TestFlight access for deployment and testing.
+- Participants with their own Apple Developer Account may directly share a TestFlight build with our team.
+- Additional tester emails may be provided if needed.
+
+---
+
+## Source Code
+
+**Source code submission is strictly not required.**
+
+---
+
+## Submission Group
+
+**The Telegram submission group will be attached here.**
+
+Form:→ 
+
+---
+
+# 🏆 **Prizes and Opportunities**
+
+- 🥇 **Hackathon Winner**:
+    - The most functional and user-friendly platform creator will receive a **full-time job offer** as a **founding member with a high CTC and base pay**.
+- 🎖️ **Certificates**:
+    - Participants with functional MVPs, even if not winners, will receive **certificates of appreciation** if their submissions are liked by the founders.
+- 🎖️ Prizes:
+    - Depending on the submissions, prizes may be distributed to the top 3 winners. The prize consideration depends upon team and will be shared later.
+
+---
+
+# 🌟 Closing Note
+
+This hackathon is more than a challenge it’s a chance to **shape your future** while working on one of the most **advanced projects** out there.
+
+It’s a test for your **dedication and obsession** towards your role not just how much you know, but how much you’re willing to figure out.
+
+It’s a **test of skills over resumes** in the era of AI, you’re **completely free to use any AI tool** to do this assignment. What matters is how smartly you use it and how much ownership you show.
+
+We want to work with **people who enjoy challenges**, the ones who keep pushing even when things break, and **don’t stop until it finally works.**
+
+Once you’re onboard, you’ll be working with a **team of geniuses** and on some seriously exciting stuff. But before that, you’ve got to **prove you’re the right fit** for this role.
+
+So yeah thank you for being here, and all the very best for this Hackathon!!
+
+We’re looking forward to connecting/working with the person who can ultimately get recognized as an winner of this challenge.
+
+Also, to those who stay till the end and give it their best shot but ultimately don’t end up winning, we’ll be giving a **Certificate of Appreciation** for their **hard work, consistency, determination, and dedication. Cheers and ALL THE BEST!!!** 😉🔥.
