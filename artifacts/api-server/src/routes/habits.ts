@@ -176,10 +176,11 @@ router.post("/habits/:id/complete", requireAuth, async (req, res): Promise<void>
 
     // Streak notification on multiples of 5 days
     if (newStreak > 0 && newStreak % 5 === 0) {
+      const streakWord = newStreak === 5 ? "five" : `${newStreak}`;
       await db.insert(notificationsTable).values({
         userId: user.id,
         type: "habits",
-        message: `You've completed this habit for ${newStreak} days in a row.`,
+        message: `You've completed this habit for ${streakWord} days in a row.`,
       });
     }
   }

@@ -28106,7 +28106,8 @@ var require_pino = __commonJS({
     function pinoBundlerAbsolutePath(p) {
       try {
         const path2 = __require("path");
-        const outputDir = "/Users/bipasasaha/Documents/care/Untitled/artifacts/api-server/dist";
+        const url2 = __require("url");
+        const outputDir = path2.dirname(url2.fileURLToPath(import.meta.url));
         return path2.resolve(outputDir, p.replace(/^\.\//, ""));
       } catch (e) {
         const f = new Function("p", "return new URL(p, import.meta.url).pathname");
@@ -82546,10 +82547,11 @@ router6.post("/habits/:id/complete", requireAuth, async (req, res) => {
       longestStreak: Math.max(habit.longestStreak, newStreak)
     }).where(eq(habitsTable.id, id));
     if (newStreak > 0 && newStreak % 5 === 0) {
+      const streakWord = newStreak === 5 ? "five" : `${newStreak}`;
       await db.insert(notificationsTable).values({
         userId: user.id,
         type: "habits",
-        message: `You've completed this habit for ${newStreak} days in a row.`
+        message: `You've completed this habit for ${streakWord} days in a row.`
       });
     }
   }
@@ -82848,6 +82850,17 @@ async function analyzeAndGenerateMemories(user) {
         observation: "User completes morning habits consistently.",
         source: "system"
       });
+    }
+    const systemObservations = await db.select().from(healthMemoriesTable).where(and(eq(healthMemoriesTable.userId, user.id), eq(healthMemoriesTable.source, "system")));
+    if (systemObservations.length > 0) {
+      const existing = await db.select().from(notificationsTable).where(and(eq(notificationsTable.userId, user.id), eq(notificationsTable.type, "insight"), eq(notificationsTable.message, "A new health insight is ready."), gte(notificationsTable.createdAt, today)));
+      if (existing.length === 0) {
+        await db.insert(notificationsTable).values({
+          userId: user.id,
+          type: "insight",
+          message: "A new health insight is ready."
+        });
+      }
     }
   } catch (err) {
     console.error("Failed to generate memories:", err);

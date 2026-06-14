@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { StyleSheet, Text, View, ScrollView, TouchableOpacity, TextInput, ActivityIndicator, Animated, KeyboardAvoidingView, Platform, Alert } from 'react-native';
+import { StyleSheet, Text, View, ScrollView, TouchableOpacity, TextInput, ActivityIndicator, Animated, KeyboardAvoidingView, Platform, Alert, Modal } from 'react-native';
 import { Audio } from 'expo-av';
 import * as FileSystem from 'expo-file-system';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
@@ -12,12 +12,17 @@ const EncodingTypeBase64 = FileSystem?.EncodingType?.Base64 || 'base64';
 
 export default function AuroraAIScreen({ apiBaseUrl }: AuroraAIScreenProps) {
   const [activeConvId, setActiveConvId] = useState<number | null>(null);
+  const [selectedModel, setSelectedModel] = useState<'openai' | 'gemini'>('openai');
   const [messages, setMessages] = useState<any[]>([]);
   const [inputText, setInputText] = useState('');
   const [isRecording, setIsRecording] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [loading, setLoading] = useState(true);
+
+  // Conversations history states
+  const [conversations, setConversations] = useState<any[]>([]);
+  const [showHistoryModal, setShowHistoryModal] = useState(false);
 
   const [recording, setRecording] = useState<Audio.Recording | null>(null);
   const [sound, setSound] = useState<Audio.Sound | null>(null);
@@ -52,24 +57,68 @@ export default function AuroraAIScreen({ apiBaseUrl }: AuroraAIScreenProps) {
     };
   }, []);
 
+  const fetchConversations = async () => {
+    try {
+      const listRes = await fetch(`${apiBaseUrl}/api/openai/conversations`);
+      if (listRes.ok) {
+        const data = await listRes.json();
+        if (Array.isArray(data)) {
+          setConversations(data);
+          return data;
+        }
+      }
+    } catch (err) {
+      console.error('Failed to fetch conversations:', err);
+    }
+    return [];
+  };
+
+  const handleDeleteConversation = async (id: number) => {
+    Alert.alert(
+      'Delete Conversation',
+      'Are you sure you want to delete this conversation?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              const res = await fetch(`${apiBaseUrl}/api/openai/conversations/${id}`, {
+                method: 'DELETE',
+              });
+              if (res.ok) {
+                const list = await fetchConversations();
+                if (activeConvId === id) {
+                  if (list.length > 0) {
+                    setActiveConvId(list[0].id);
+                    fetchMessages(list[0].id);
+                  } else {
+                    await startNewConversation();
+                  }
+                }
+              } else {
+                Alert.alert('Error', 'Failed to delete conversation.');
+              }
+            } catch (err) {
+              console.error(err);
+              Alert.alert('Error', 'Could not connect to the server.');
+            }
+          },
+        },
+      ]
+    );
+  };
+
   // Fetch or create conversation
   useEffect(() => {
     const initializeConversation = async () => {
-      try {
-        const listRes = await fetch(`${apiBaseUrl}/api/openai/conversations`);
-        const conversations = await listRes.json();
-
-        if (Array.isArray(conversations) && conversations.length > 0) {
-          // Join the latest chat
-          setActiveConvId(conversations[0].id);
-          fetchMessages(conversations[0].id);
-        } else {
-          // Create a new one
-          await startNewConversation();
-        }
-      } catch (err) {
-        console.error('Failed to init conversation:', err);
-        setLoading(false);
+      const convList = await fetchConversations();
+      if (convList.length > 0) {
+        setActiveConvId(convList[0].id);
+        fetchMessages(convList[0].id);
+      } else {
+        await startNewConversation();
       }
     };
     initializeConversation();
@@ -124,6 +173,7 @@ export default function AuroraAIScreen({ apiBaseUrl }: AuroraAIScreenProps) {
         const data = await response.json();
         setActiveConvId(data.id);
         setMessages([]);
+        await fetchConversations();
       }
     } catch (err) {
       console.error(err);
@@ -146,7 +196,7 @@ export default function AuroraAIScreen({ apiBaseUrl }: AuroraAIScreenProps) {
       const response = await fetch(`${apiBaseUrl}/api/openai/conversations/${activeConvId}/messages`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content: textToSend }),
+        body: JSON.stringify({ content: textToSend, model: selectedModel }),
       });
 
       if (response.ok) {
@@ -224,7 +274,7 @@ export default function AuroraAIScreen({ apiBaseUrl }: AuroraAIScreenProps) {
         const response = await fetch(`${apiBaseUrl}/api/openai/conversations/${activeConvId}/voice-messages`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ audio: base64Audio }),
+          body: JSON.stringify({ audio: base64Audio, model: selectedModel }),
         });
 
         if (response.ok) {
@@ -346,10 +396,117 @@ export default function AuroraAIScreen({ apiBaseUrl }: AuroraAIScreenProps) {
             </Text>
           </View>
         </View>
-        <TouchableOpacity style={styles.newChatBtn} onPress={startNewConversation}>
-          <Feather name="plus" size={16} color="#00ffcc" />
-          <Text style={styles.newChatText}>New Chat</Text>
-        </TouchableOpacity>
+        <View style={styles.headerActions}>
+          <TouchableOpacity style={styles.historyBtn} onPress={() => setShowHistoryModal(true)}>
+            <Feather name="message-square" size={16} color="#ffffff" />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.newChatBtn} onPress={startNewConversation}>
+            <Feather name="plus" size={16} color="#00ffcc" />
+            <Text style={styles.newChatText}>New</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      {/* History Modal */}
+      <Modal visible={showHistoryModal} animationType="slide" transparent={true}>
+        <View style={styles.historyModalBg}>
+          <View style={styles.historyModalContent}>
+            <View style={styles.historyModalHeader}>
+              <Text style={styles.historyModalTitle}>Chat History</Text>
+              <TouchableOpacity onPress={() => setShowHistoryModal(false)} style={styles.closeBtn}>
+                <Feather name="x" size={24} color="#ffffff" />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView style={styles.historyList} showsVerticalScrollIndicator={false}>
+              {conversations.length === 0 ? (
+                <View style={styles.emptyHistoryContainer}>
+                  <Feather name="message-square" size={48} color="#475569" style={styles.emptyHistoryIcon} />
+                  <Text style={styles.emptyHistoryTitle}>No past chats</Text>
+                  <Text style={styles.emptyHistoryDesc}>Start chatting to build history!</Text>
+                </View>
+              ) : (
+                conversations.map((conv) => {
+                  const isActive = activeConvId === conv.id;
+                  return (
+                    <View
+                      key={conv.id}
+                      style={[styles.historyItem, isActive && styles.historyItemActive]}
+                    >
+                      <TouchableOpacity
+                        style={styles.historyItemMain}
+                        onPress={() => {
+                          setActiveConvId(conv.id);
+                          fetchMessages(conv.id);
+                          setShowHistoryModal(false);
+                        }}
+                      >
+                        <Feather name="message-square" size={16} color={isActive ? "#00ffcc" : "#64748b"} style={styles.historyIcon} />
+                        <View style={styles.historyItemMeta}>
+                          <Text style={[styles.historyItemTitle, isActive && styles.historyItemTitleActive]} numberOfLines={1}>
+                            {conv.title}
+                          </Text>
+                          <Text style={styles.historyItemDate}>
+                            {new Date(conv.createdAt).toLocaleDateString()}
+                          </Text>
+                        </View>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        style={styles.deleteChatBtn}
+                        onPress={() => handleDeleteConversation(conv.id)}
+                      >
+                        <Feather name="trash-2" size={16} color="#ef4444" />
+                      </TouchableOpacity>
+                    </View>
+                  );
+                })
+              )}
+              <View style={{ height: 40 }} />
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Model Selector Sub-header */}
+      <View style={styles.subHeader}>
+        <View style={styles.subHeaderLeft}>
+          <View style={styles.activeDot} />
+          <Text style={styles.subHeaderText}>COMPANION AI ACTIVE</Text>
+        </View>
+        <View style={styles.modelToggleContainer}>
+          <TouchableOpacity
+            style={[
+              styles.modelToggleButton,
+              selectedModel === 'openai' && styles.modelToggleButtonActive,
+            ]}
+            onPress={() => setSelectedModel('openai')}
+          >
+            <Text
+              style={[
+                styles.modelToggleText,
+                selectedModel === 'openai' && styles.modelToggleTextActive,
+              ]}
+            >
+              GPT-4o-mini
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              styles.modelToggleButton,
+              selectedModel === 'gemini' && styles.modelToggleButtonActive,
+            ]}
+            onPress={() => setSelectedModel('gemini')}
+          >
+            <Text
+              style={[
+                styles.modelToggleText,
+                selectedModel === 'gemini' && styles.modelToggleTextActive,
+              ]}
+            >
+              Gemini 2.5 Flash
+            </Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Messages ScrollView */}
@@ -663,5 +820,169 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginLeft: 4,
+  },
+  subHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.05)',
+    backgroundColor: '#0c101d',
+  },
+  subHeaderLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  activeDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#10b981',
+    marginRight: 6,
+  },
+  subHeaderText: {
+    fontSize: 10,
+    fontWeight: 'bold',
+    color: '#64748b',
+    letterSpacing: 0.5,
+  },
+  modelToggleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#0f172a',
+    padding: 3,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.06)',
+  },
+  modelToggleButton: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+  },
+  modelToggleButtonActive: {
+    backgroundColor: '#1e293b',
+  },
+  modelToggleText: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: '#64748b',
+  },
+  modelToggleTextActive: {
+    color: '#ffffff',
+  },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  historyBtn: {
+    padding: 8,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+  },
+  historyModalBg: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.85)',
+    justifyContent: 'flex-end',
+  },
+  historyModalContent: {
+    backgroundColor: '#0c111d',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    padding: 24,
+    maxHeight: '80%',
+  },
+  historyModalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.05)',
+    paddingBottom: 12,
+  },
+  historyModalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#ffffff',
+  },
+  closeBtn: {
+    padding: 4,
+  },
+  historyList: {
+    flexDirection: 'column',
+  },
+  emptyHistoryContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 60,
+  },
+  emptyHistoryIcon: {
+    marginBottom: 16,
+    opacity: 0.6,
+  },
+  emptyHistoryTitle: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 6,
+  },
+  emptyHistoryDesc: {
+    color: '#64748b',
+    fontSize: 13,
+    textAlign: 'center',
+  },
+  historyItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: 'rgba(255, 255, 255, 0.02)',
+    borderColor: 'rgba(255, 255, 255, 0.04)',
+    borderWidth: 1,
+    borderRadius: 14,
+    padding: 12,
+    marginBottom: 10,
+  },
+  historyItemActive: {
+    backgroundColor: 'rgba(0, 255, 204, 0.04)',
+    borderColor: 'rgba(0, 255, 204, 0.15)',
+  },
+  historyItemMain: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    paddingRight: 8,
+  },
+  historyIcon: {
+    marginRight: 12,
+  },
+  historyItemMeta: {
+    flex: 1,
+  },
+  historyItemTitle: {
+    color: '#94a3b8',
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  historyItemTitleActive: {
+    color: '#ffffff',
+    fontWeight: 'bold',
+  },
+  historyItemDate: {
+    color: '#475569',
+    fontSize: 11,
+    marginTop: 2,
+  },
+  deleteChatBtn: {
+    padding: 8,
+    backgroundColor: 'rgba(239, 68, 68, 0.08)',
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

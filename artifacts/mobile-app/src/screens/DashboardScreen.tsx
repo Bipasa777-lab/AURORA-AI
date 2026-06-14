@@ -15,6 +15,11 @@ export default function DashboardScreen({ apiBaseUrl }: DashboardScreenProps) {
   const [habitsToday, setHabitsToday] = useState<any[]>([]);
   const [latestVitals, setLatestVitals] = useState<any | null>(null);
 
+  // Notifications states
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [showNotificationsModal, setShowNotificationsModal] = useState(false);
+
   // Form states for Vitals Modal
   const [showVitalsModal, setShowVitalsModal] = useState(false);
   const [systolic, setSystolic] = useState('');
@@ -39,12 +44,20 @@ export default function DashboardScreen({ apiBaseUrl }: DashboardScreenProps) {
       const vitalsRes = await fetch(`${apiBaseUrl}/api/vitals?limit=1`);
       const vitalsData = await vitalsRes.json();
 
+      // Fetch notifications
+      const notifRes = await fetch(`${apiBaseUrl}/api/notifications`);
+      const notifData = notifRes.ok ? await notifRes.json() : [];
+
       if (dashRes.ok) setData(dashData);
       if (habitsRes.ok) setHabitsToday(habitsData);
       if (vitalsRes.ok && vitalsData.length > 0) {
         setLatestVitals(vitalsData[0]);
       } else {
         setLatestVitals(null);
+      }
+      if (notifRes.ok) {
+        setNotifications(notifData);
+        setUnreadCount(notifData.filter((n: any) => !n.isRead).length);
       }
     } catch (err) {
       console.error('Error fetching dashboard data:', err);
@@ -99,6 +112,50 @@ export default function DashboardScreen({ apiBaseUrl }: DashboardScreenProps) {
     } catch (err) {
       console.error(err);
       Alert.alert('Error', 'Could not connect to the server.');
+    }
+  };
+
+  const handleMarkAllRead = async () => {
+    try {
+      const response = await fetch(`${apiBaseUrl}/api/notifications/read-all`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      if (response.ok) {
+        setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+        setUnreadCount(0);
+      } else {
+        Alert.alert('Error', 'Failed to mark notifications as read.');
+      }
+    } catch (err) {
+      console.error(err);
+      Alert.alert('Error', 'Could not connect to the server.');
+    }
+  };
+
+  const handleMarkOneRead = async (id: number) => {
+    try {
+      const response = await fetch(`${apiBaseUrl}/api/notifications/${id}/read`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      if (response.ok) {
+        setNotifications(prev =>
+          prev.map(n => (n.id === id ? { ...n, isRead: true } : n))
+        );
+        setUnreadCount(prev => Math.max(0, prev - 1));
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const formatNotifTime = (dateStr: string) => {
+    try {
+      const d = new Date(dateStr);
+      return `${d.toLocaleDateString([], { month: 'short', day: 'numeric' })} at ${d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+    } catch (e) {
+      return dateStr;
     }
   };
 
@@ -163,8 +220,20 @@ export default function DashboardScreen({ apiBaseUrl }: DashboardScreenProps) {
       }
     >
       <View style={styles.header}>
-        <Text style={styles.greeting}>Hello, User</Text>
-        <Text style={styles.date}>{data?.date || new Date().toISOString().split('T')[0]}</Text>
+        <View style={styles.headerTop}>
+          <View>
+            <Text style={styles.greeting}>Hello, User</Text>
+            <Text style={styles.date}>{data?.date || new Date().toISOString().split('T')[0]}</Text>
+          </View>
+          <TouchableOpacity style={styles.bellBtn} onPress={() => setShowNotificationsModal(true)}>
+            <Feather name="bell" size={22} color="#ffffff" />
+            {unreadCount > 0 && (
+              <View style={styles.badge}>
+                <Text style={styles.badgeText}>{unreadCount > 9 ? '9+' : unreadCount}</Text>
+              </View>
+            )}
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Insight Banner */}
@@ -433,6 +502,98 @@ export default function DashboardScreen({ apiBaseUrl }: DashboardScreenProps) {
           </View>
         </View>
       </Modal>
+
+      {/* Notifications Modal */}
+      <Modal visible={showNotificationsModal} animationType="slide" transparent={true}>
+        <View style={styles.modalBg}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <View style={styles.notifTitleContainer}>
+                <Text style={styles.modalTitle}>Notifications</Text>
+                {unreadCount > 0 && (
+                  <View style={styles.notifCountBadge}>
+                    <Text style={styles.notifCountText}>{unreadCount} new</Text>
+                  </View>
+                )}
+              </View>
+              <View style={styles.notifActionRow}>
+                {unreadCount > 0 && (
+                  <TouchableOpacity onPress={handleMarkAllRead} style={styles.markAllBtn}>
+                    <Text style={styles.markAllText}>Mark all read</Text>
+                  </TouchableOpacity>
+                )}
+                <TouchableOpacity onPress={() => setShowNotificationsModal(false)} style={styles.closeBtn}>
+                  <Feather name="x" size={24} color="#ffffff" />
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            <ScrollView style={styles.notifList} showsVerticalScrollIndicator={false}>
+              {notifications.length === 0 ? (
+                <View style={styles.emptyNotifContainer}>
+                  <Feather name="bell-off" size={48} color="#475569" style={styles.emptyNotifIcon} />
+                  <Text style={styles.emptyNotifTitle}>All caught up!</Text>
+                  <Text style={styles.emptyNotifDesc}>You don't have any notifications at the moment.</Text>
+                </View>
+              ) : (
+                notifications.map((item) => {
+                  let iconName: any = "bell";
+                  let iconColor = "#94a3b8";
+                  let iconBg = "rgba(148, 163, 184, 0.1)";
+
+                  if (item.type === "hydration") {
+                    iconName = "water";
+                    iconColor = "#00d2ff";
+                    iconBg = "rgba(0, 210, 255, 0.1)";
+                  } else if (item.type === "sleep") {
+                    iconName = "moon";
+                    iconColor = "#c084fc";
+                    iconBg = "rgba(192, 132, 252, 0.1)";
+                  } else if (item.type === "habits" || item.type === "habit") {
+                    iconName = "activity";
+                    iconColor = "#00ffcc";
+                    iconBg = "rgba(0, 255, 204, 0.1)";
+                  } else if (item.type === "insight") {
+                    iconName = "star";
+                    iconColor = "#fcd34d";
+                    iconBg = "rgba(252, 211, 77, 0.1)";
+                  }
+
+                  const isItemRead = item.isRead;
+
+                  return (
+                    <TouchableOpacity
+                      key={item.id}
+                      style={[styles.notifItem, !isItemRead && styles.notifItemUnread]}
+                      onPress={() => !isItemRead && handleMarkOneRead(item.id)}
+                      activeOpacity={isItemRead ? 1 : 0.7}
+                    >
+                      <View style={[styles.notifIconBg, { backgroundColor: iconBg }]}>
+                        {iconName === "water" ? (
+                          <MaterialCommunityIcons name="water" size={20} color={iconColor} />
+                        ) : (
+                          <Feather name={iconName} size={18} color={iconColor} />
+                        )}
+                      </View>
+                      <View style={styles.notifBody}>
+                        <Text style={[styles.notifText, !isItemRead && styles.notifTextUnread]}>
+                          {item.message}
+                        </Text>
+                        <Text style={styles.notifTime}>{formatNotifTime(item.createdAt)}</Text>
+                      </View>
+                      {!isItemRead && (
+                        <View style={styles.unreadDot} />
+                      )}
+                    </TouchableOpacity>
+                  );
+                })
+              )}
+              <View style={{ height: 40 }} />
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
+
 
       <View style={{ height: 60 }} />
     </ScrollView>
@@ -823,5 +984,140 @@ const styles = StyleSheet.create({
     color: '#64748b',
     fontSize: 14,
     fontWeight: '600',
+  },
+  headerTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    width: '100%',
+  },
+  bellBtn: {
+    position: 'relative',
+    padding: 10,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+  },
+  badge: {
+    position: 'absolute',
+    top: -2,
+    right: -2,
+    backgroundColor: '#ff4d4d',
+    borderRadius: 9,
+    minWidth: 18,
+    height: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 3,
+  },
+  badgeText: {
+    color: '#ffffff',
+    fontSize: 9,
+    fontWeight: 'bold',
+  },
+  notifTitleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  notifCountBadge: {
+    backgroundColor: 'rgba(0, 255, 204, 0.1)',
+    borderColor: 'rgba(0, 255, 204, 0.2)',
+    borderWidth: 1,
+    borderRadius: 20,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+  },
+  notifCountText: {
+    color: '#00ffcc',
+    fontSize: 11,
+    fontWeight: 'bold',
+  },
+  notifActionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  markAllBtn: {
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+  },
+  markAllText: {
+    color: '#00ffcc',
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  closeBtn: {
+    padding: 4,
+  },
+  notifList: {
+    flexDirection: 'column',
+  },
+  emptyNotifContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 60,
+  },
+  emptyNotifIcon: {
+    marginBottom: 16,
+    opacity: 0.6,
+  },
+  emptyNotifTitle: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 6,
+  },
+  emptyNotifDesc: {
+    color: '#64748b',
+    fontSize: 13,
+    textAlign: 'center',
+  },
+  notifItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.02)',
+    borderColor: 'rgba(255, 255, 255, 0.04)',
+    borderWidth: 1,
+    borderRadius: 14,
+    padding: 14,
+    marginBottom: 10,
+  },
+  notifItemUnread: {
+    backgroundColor: 'rgba(0, 255, 204, 0.03)',
+    borderColor: 'rgba(0, 255, 204, 0.1)',
+  },
+  notifIconBg: {
+    width: 38,
+    height: 38,
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 14,
+  },
+  notifBody: {
+    flex: 1,
+  },
+  notifText: {
+    color: '#94a3b8',
+    fontSize: 13,
+    lineHeight: 18,
+    marginBottom: 4,
+  },
+  notifTextUnread: {
+    color: '#ffffff',
+    fontWeight: '500',
+  },
+  notifTime: {
+    color: '#475569',
+    fontSize: 11,
+  },
+  unreadDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#00ffcc',
+    marginLeft: 10,
   },
 });

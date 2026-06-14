@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { eq, and, desc, gte, lt } from "drizzle-orm";
-import { db, healthMemoriesTable, hydrationLogsTable, sleepLogsTable, habitsTable, habitLogsTable } from "@workspace/db";
+import { db, healthMemoriesTable, hydrationLogsTable, sleepLogsTable, habitsTable, habitLogsTable, notificationsTable } from "@workspace/db";
 import { CreateMemoryBody } from "@workspace/api-zod";
 import { requireAuth, getOrCreateUser } from "../lib/auth";
 
@@ -122,6 +122,34 @@ async function analyzeAndGenerateMemories(user: any) {
         observation: "User completes morning habits consistently.",
         source: "system",
       });
+    }
+
+    // Generate insight notification if user has any system observations
+    const systemObservations = await db
+      .select()
+      .from(healthMemoriesTable)
+      .where(and(eq(healthMemoriesTable.userId, user.id), eq(healthMemoriesTable.source, "system")));
+
+    if (systemObservations.length > 0) {
+      const existing = await db
+        .select()
+        .from(notificationsTable)
+        .where(
+          and(
+            eq(notificationsTable.userId, user.id),
+            eq(notificationsTable.type, "insight"),
+            eq(notificationsTable.message, "A new health insight is ready."),
+            gte(notificationsTable.createdAt, today)
+          )
+        );
+
+      if (existing.length === 0) {
+        await db.insert(notificationsTable).values({
+          userId: user.id,
+          type: "insight",
+          message: "A new health insight is ready.",
+        });
+      }
     }
 
   } catch (err) {

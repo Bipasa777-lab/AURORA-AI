@@ -10,8 +10,8 @@
     "expo-av": "^16.0.8",
     "expo-file-system": "^56.0.8",
     "expo-status-bar": "~56.0.4",
-    "react": "catalog:",
-    "react-dom": "catalog:",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
     "react-native": "0.85.3",
     "react-native-web": "^0.21.2"
   },
