@@ -6,7 +6,11 @@
     "outDir": "dist",
     "rootDir": "src",
     "types": ["node"],
-    "typeRoots": ["./node_modules/@types", "../../node_modules/@types"]
+    "typeRoots": ["./node_modules/@types", "../../node_modules/@types"],
+    "noImplicitAny": false,
+    "strictNullChecks": false,
+    "strict": false,
+    "strictPropertyInitialization": false
   },
   "include": ["src"],
   "references": []
