@@ -81936,7 +81936,7 @@ var db = drizzle(pool, { schema: schema_exports });
 var requireAuth = (req, res, next) => {
   const bypass2 = process.env.BYPASS_CLERK === "true" || !process.env.CLERK_SECRET_KEY || process.env.CLERK_SECRET_KEY.includes("dummy");
   if (bypass2) {
-    req.clerkId = "user_mock_123";
+    req.clerkId = (req.headers["x-mock-user-email"] || "").trim() || "user_mock_123";
     next();
     return;
   }

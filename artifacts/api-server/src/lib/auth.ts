@@ -11,7 +11,8 @@ export const requireAuth = (req: Request, res: Response, next: NextFunction): vo
     process.env.CLERK_SECRET_KEY.includes("dummy");
 
   if (bypass) {
-    (req as any).clerkId = "user_mock_123";
+    const mockEmail = (req.headers["x-mock-user-email"] as string || "").trim();
+    (req as any).clerkId = mockEmail || "user_mock_123";
     next();
     return;
   }
