@@ -81962,7 +81962,7 @@ async function getOrCreateUser(clerkId, name24) {
 
 // src/routes/users.ts
 var router2 = (0, import_express3.Router)();
-router2.get("/me", requireAuth, async (req, res) => {
+router2.get(["/me", "/profile"], requireAuth, async (req, res) => {
   const clerkId = req.clerkId;
   const user = await getOrCreateUser(clerkId);
   res.json({
@@ -81985,7 +81985,7 @@ router2.get("/me", requireAuth, async (req, res) => {
     updatedAt: user.updatedAt
   });
 });
-router2.put("/me", requireAuth, async (req, res) => {
+const handleUpsertProfile = async (req, res) => {
   const clerkId = req.clerkId;
   const parsed = UpsertProfileBody.safeParse(req.body);
   if (!parsed.success) {
@@ -82027,7 +82027,11 @@ router2.put("/me", requireAuth, async (req, res) => {
     createdAt: updated.createdAt,
     updatedAt: updated.updatedAt
   });
-});
+};
+router2.put("/me", requireAuth, handleUpsertProfile);
+router2.put("/profile", requireAuth, handleUpsertProfile);
+router2.post("/me", requireAuth, handleUpsertProfile);
+router2.post("/profile", requireAuth, handleUpsertProfile);
 var users_default = router2;
 
 // src/routes/dashboard.ts
@@ -82381,7 +82385,7 @@ router5.post("/sleep", requireAuth, async (req, res) => {
   const durationHours = (wakeTime.getTime() - bedtime.getTime()) / (1e3 * 60 * 60);
   const [log] = await db.insert(sleepLogsTable).values({
     userId: user.id,
-    sleepDate: String(parsed.data.sleepDate),
+    sleepDate: new Date(parsed.data.sleepDate).toISOString().split("T")[0],
     bedtime,
     wakeTime,
     durationHours: Math.round(durationHours * 100) / 100,
@@ -82616,7 +82620,7 @@ router7.get("/nutrition/today", requireAuth, async (req, res) => {
     meals
   });
 });
-router7.get("/meals", requireAuth, async (req, res) => {
+router7.get(["/meals", "/nutrition"], requireAuth, async (req, res) => {
   const clerkId = req.clerkId;
   const user = await getOrCreateUser(clerkId);
   const dateStr = req.query.date;
@@ -82632,7 +82636,7 @@ router7.get("/meals", requireAuth, async (req, res) => {
   const meals = await db.select().from(mealLogsTable).where(and(...conditions)).orderBy(desc(mealLogsTable.loggedAt));
   res.json(meals);
 });
-router7.post("/meals", requireAuth, async (req, res) => {
+router7.post(["/meals", "/nutrition"], requireAuth, async (req, res) => {
   const clerkId = req.clerkId;
   const user = await getOrCreateUser(clerkId);
   const parsed = CreateMealLogBody.safeParse(req.body);
@@ -82653,7 +82657,7 @@ router7.post("/meals", requireAuth, async (req, res) => {
   }).returning();
   res.status(201).json(meal);
 });
-router7.patch("/meals/:id", requireAuth, async (req, res) => {
+const handleUpdateMeal = async (req, res) => {
   const clerkId = req.clerkId;
   const user = await getOrCreateUser(clerkId);
   const rawId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
@@ -82669,8 +82673,12 @@ router7.patch("/meals/:id", requireAuth, async (req, res) => {
     return;
   }
   res.json(updated);
-});
-router7.delete("/meals/:id", requireAuth, async (req, res) => {
+};
+router7.patch("/meals/:id", requireAuth, handleUpdateMeal);
+router7.patch("/nutrition/:id", requireAuth, handleUpdateMeal);
+router7.put("/meals/:id", requireAuth, handleUpdateMeal);
+router7.put("/nutrition/:id", requireAuth, handleUpdateMeal);
+router7.delete(["/meals/:id", "/nutrition/:id"], requireAuth, async (req, res) => {
   const clerkId = req.clerkId;
   const user = await getOrCreateUser(clerkId);
   const rawId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;

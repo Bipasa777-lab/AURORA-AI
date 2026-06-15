@@ -188,10 +188,10 @@ export default function HabitsPage() {
                     <div className="flex items-center gap-2 shrink-0">
                       {!isDone && !isSkipped ? (
                         <>
-                          <Button size="sm" onClick={() => complete.mutate({ id: habit.id, data: {} })} className="gap-1 bg-green-500 hover:bg-green-600">
+                          <Button size="sm" onClick={() => complete.mutate({ id: habit.id })} className="gap-1 bg-green-500 hover:bg-green-600">
                             <Check className="w-3.5 h-3.5" />Done
                           </Button>
-                          <Button size="sm" variant="outline" onClick={() => skip.mutate({ id: habit.id, data: {} })}>
+                          <Button size="sm" variant="outline" onClick={() => skip.mutate({ id: habit.id })}>
                             <SkipForward className="w-3.5 h-3.5" />
                           </Button>
                         </>

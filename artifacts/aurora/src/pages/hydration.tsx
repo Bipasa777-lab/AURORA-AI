@@ -163,7 +163,7 @@ export default function HydrationPage() {
                   <YAxis tickFormatter={v => `${(v / 1000).toFixed(1)}L`} tick={{ fontSize: 12 }} width={45} />
                   <Tooltip formatter={(v: any) => [`${(v / 1000).toFixed(2)}L`, "Water"]} />
                   <Bar dataKey="totalMl" radius={[4, 4, 0, 0]}>
-                    {weekly.map((entry, i) => (
+                    {weekly.map((entry: any, i: number) => (
                       <Cell key={i} fill={entry.percentComplete >= 80 ? "hsl(170 72% 38%)" : "hsl(210 72% 60%)"} />
                     ))}
                   </Bar>

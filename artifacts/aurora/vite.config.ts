@@ -50,6 +50,18 @@ export default defineConfig({
       strict: true,
     },
     proxy: {
+      "/api/profile": {
+        target: "http://localhost:8080",
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/profile/, "/api/me"),
+        configure: (proxy) => {
+          proxy.on("proxyReq", (proxyReq, req) => {
+            if (req.method === "POST") {
+              proxyReq.method = "PUT";
+            }
+          });
+        }
+      },
       "/api": {
         target: "http://localhost:8080",
         changeOrigin: true,
@@ -61,6 +73,18 @@ export default defineConfig({
     host: "0.0.0.0",
     allowedHosts: true,
     proxy: {
+      "/api/profile": {
+        target: "http://localhost:8080",
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/profile/, "/api/me"),
+        configure: (proxy) => {
+          proxy.on("proxyReq", (proxyReq, req) => {
+            if (req.method === "POST") {
+              proxyReq.method = "PUT";
+            }
+          });
+        }
+      },
       "/api": {
         target: "http://localhost:8080",
         changeOrigin: true,

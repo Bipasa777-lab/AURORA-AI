@@ -85,7 +85,7 @@ router.post("/sleep", requireAuth, async (req, res): Promise<void> => {
     .insert(sleepLogsTable)
     .values({
       userId: user.id,
-      sleepDate: String(parsed.data.sleepDate),
+      sleepDate: new Date(parsed.data.sleepDate).toISOString().split("T")[0],
       bedtime,
       wakeTime,
       durationHours: Math.round(durationHours * 100) / 100,

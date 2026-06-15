@@ -1,8 +1,9 @@
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
-import { Droplets, Moon, Target, UtensilsCrossed, Sparkles, Flame, BarChart3, Brain, ArrowLeft, ArrowRight, Play, Pause } from "lucide-react";
+import { Droplets, Moon, Sun, Target, UtensilsCrossed, Sparkles, Flame, BarChart3, Brain, ArrowLeft, ArrowRight, Play, Pause } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useTheme } from "next-themes";
 
 const features = [
   { icon: Droplets, title: "Hydration Tracking", desc: "Log water intake and hit daily goals with smart reminders.", color: "text-blue-500" },
@@ -54,9 +55,15 @@ const slides = [
 ];
 
 export default function LandingPage() {
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isPlaying, setIsPlaying] = useState(true);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (isPlaying) {
@@ -90,13 +97,28 @@ export default function LandingPage() {
       {/* Header */}
       <header className="fixed top-0 inset-x-0 z-50 bg-background/80 backdrop-blur border-b border-border">
         <div className="max-w-6xl mx-auto px-4 md:px-6 flex items-center justify-between h-16">
-          <div className="flex items-center gap-2">
+          <Link href="/" className="flex items-center gap-2 cursor-pointer hover:opacity-90 transition-opacity">
             <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
               <Sparkles className="w-4 h-4 text-primary-foreground" />
             </div>
             <span className="font-bold text-lg tracking-tight">Aurora</span>
-          </div>
+          </Link>
           <div className="flex items-center gap-3">
+            {mounted && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-9 w-9 text-foreground rounded-full hover:bg-muted"
+                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                aria-label="Toggle theme"
+              >
+                {theme === "dark" ? (
+                  <Sun className="w-4 h-4 text-amber-500" />
+                ) : (
+                  <Moon className="w-4 h-4 text-indigo-500" />
+                )}
+              </Button>
+            )}
             <Link href="/sign-in" asChild>
               <Button variant="ghost" size="sm">Sign In</Button>
             </Link>

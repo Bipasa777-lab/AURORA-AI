@@ -2,10 +2,12 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 // Helper for fetch calls
 async function fetcher(url: string, init?: RequestInit) {
+  const mockEmail = localStorage.getItem("mock_user_email") || "";
   const res = await fetch(url, {
     ...init,
     headers: {
       "Content-Type": "application/json",
+      "X-Mock-User-Email": mockEmail,
       ...(init?.headers || {}),
     },
   });
@@ -17,10 +19,11 @@ async function fetcher(url: string, init?: RequestInit) {
 }
 
 // 1. OpenAI / Aurora AI Conversations
-export function useListOpenaiConversations() {
+export function useListOpenaiConversations(options?: any) {
   return useQuery<any[]>({
     queryKey: ["/api/openai/conversations"],
     queryFn: () => fetcher("/api/openai/conversations"),
+    ...options?.query,
   });
 }
 
@@ -77,10 +80,11 @@ export function useDeleteOpenaiConversation(options?: any) {
 }
 
 // 2. Dashboard, Profile and Memories
-export function useGetDashboard() {
+export function useGetDashboard(options?: any) {
   return useQuery<any>({
     queryKey: ["/api/dashboard"],
     queryFn: () => fetcher("/api/dashboard"),
+    ...options?.query,
   });
 }
 
@@ -88,10 +92,11 @@ export function getGetDashboardQueryKey() {
   return ["/api/dashboard"];
 }
 
-export function useGetProfile() {
+export function useGetProfile(options?: any) {
   return useQuery<any>({
     queryKey: ["/api/profile"],
     queryFn: () => fetcher("/api/profile"),
+    ...options?.query,
   });
 }
 
@@ -116,26 +121,29 @@ export function useUpsertProfile(options?: any) {
   });
 }
 
-export function useListMemories() {
+export function useListMemories(options?: any) {
   return useQuery<any[]>({
     queryKey: ["/api/memories"],
     queryFn: () => fetcher("/api/memories"),
+    ...options?.query,
   });
 }
 
 // 3. Streaks
-export function useGetStreaks() {
+export function useGetStreaks(options?: any) {
   return useQuery<any>({
     queryKey: ["/api/streaks"],
     queryFn: () => fetcher("/api/streaks"),
+    ...options?.query,
   });
 }
 
 // 4. Sleep
-export function useListSleep() {
+export function useListSleep(options?: any) {
   return useQuery<any[]>({
     queryKey: ["/api/sleep"],
     queryFn: () => fetcher("/api/sleep"),
+    ...options?.query,
   });
 }
 
@@ -189,25 +197,28 @@ export function getGetSleepAnalysisQueryKey() {
 }
 
 // 5. Reports
-export function useGetWeeklyReport() {
+export function useGetWeeklyReport(options?: any) {
   return useQuery<any>({
     queryKey: ["/api/reports/weekly"],
     queryFn: () => fetcher("/api/reports/weekly"),
+    ...options?.query,
   });
 }
 
-export function useGetMonthlyReport() {
+export function useGetMonthlyReport(options?: any) {
   return useQuery<any>({
     queryKey: ["/api/reports/monthly"],
     queryFn: () => fetcher("/api/reports/monthly"),
+    ...options?.query,
   });
 }
 
 // 6. Nutrition
-export function useGetTodayNutrition() {
+export function useGetTodayNutrition(options?: any) {
   return useQuery<any>({
     queryKey: ["/api/nutrition/today"],
     queryFn: () => fetcher("/api/nutrition/today"),
+    ...options?.query,
   });
 }
 
@@ -215,10 +226,11 @@ export function getGetTodayNutritionQueryKey() {
   return ["/api/nutrition/today"];
 }
 
-export function useListMeals() {
+export function useListMeals(options?: any) {
   return useQuery<any[]>({
     queryKey: ["/api/nutrition"],
     queryFn: () => fetcher("/api/nutrition"),
+    ...options?.query,
   });
 }
 
@@ -277,10 +289,11 @@ export function useUpdateMealLog(options?: any) {
 }
 
 // 7. Hydration
-export function useGetTodayHydration() {
+export function useGetTodayHydration(options?: any) {
   return useQuery<any>({
     queryKey: ["/api/hydration/today"],
     queryFn: () => fetcher("/api/hydration/today"),
+    ...options?.query,
   });
 }
 
@@ -288,10 +301,11 @@ export function getGetTodayHydrationQueryKey() {
   return ["/api/hydration/today"];
 }
 
-export function useGetWeeklyHydration() {
+export function useGetWeeklyHydration(options?: any) {
   return useQuery<any>({
     queryKey: ["/api/hydration/weekly"],
     queryFn: () => fetcher("/api/hydration/weekly"),
+    ...options?.query,
   });
 }
 
@@ -299,10 +313,11 @@ export function getGetWeeklyHydrationQueryKey() {
   return ["/api/hydration/weekly"];
 }
 
-export function useListHydration() {
+export function useListHydration(options?: any) {
   return useQuery<any[]>({
     queryKey: ["/api/hydration"],
     queryFn: () => fetcher("/api/hydration"),
+    ...options?.query,
   });
 }
 
@@ -344,10 +359,11 @@ export function useDeleteHydrationLog(options?: any) {
 }
 
 // 8. Habits
-export function useGetTodayHabits() {
+export function useGetTodayHabits(options?: any) {
   return useQuery<any[]>({
     queryKey: ["/api/habits/today"],
     queryFn: () => fetcher("/api/habits/today"),
+    ...options?.query,
   });
 }
 
@@ -355,10 +371,11 @@ export function getGetTodayHabitsQueryKey() {
   return ["/api/habits/today"];
 }
 
-export function useListHabits() {
+export function useListHabits(options?: any) {
   return useQuery<any[]>({
     queryKey: ["/api/habits"],
     queryFn: () => fetcher("/api/habits"),
+    ...options?.query,
   });
 }
 
@@ -434,10 +451,11 @@ export function useDeleteHabit(options?: any) {
 }
 
 // 9. Notifications
-export function useListNotifications() {
+export function useListNotifications(options?: any) {
   return useQuery<any[]>({
     queryKey: ["/api/notifications"],
     queryFn: () => fetcher("/api/notifications"),
+    ...options?.query,
   });
 }
 

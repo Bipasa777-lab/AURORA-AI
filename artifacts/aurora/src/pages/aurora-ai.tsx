@@ -36,7 +36,7 @@ export default function AuroraAIPage() {
 
   const deleteConv = useDeleteOpenaiConversation({
     mutation: {
-      onSuccess: (_, variables) => {
+      onSuccess: (_: any, variables: any) => {
         qc.invalidateQueries({ queryKey: getListOpenaiConversationsQueryKey() });
         if (activeConvId === variables.id) {
           setActiveConvId(null);
@@ -79,9 +79,13 @@ export default function AuroraAIPage() {
     setStreamingContent("");
 
     try {
+      const mockEmail = localStorage.getItem("mock_user_email") || "";
       const response = await fetch(`/api/openai/conversations/${activeConvId}/messages`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "X-Mock-User-Email": mockEmail
+        },
         body: JSON.stringify({ content, model: selectedModel }),
       });
 
@@ -157,9 +161,13 @@ export default function AuroraAIPage() {
           const base64 = (reader.result as string).split(",")[1];
           setIsProcessingVoice(true);
           try {
+            const mockEmail = localStorage.getItem("mock_user_email") || "";
             const response = await fetch(`/api/openai/conversations/${activeConvId}/voice-messages`, {
               method: "POST",
-              headers: { "Content-Type": "application/json" },
+              headers: { 
+                "Content-Type": "application/json",
+                "X-Mock-User-Email": mockEmail
+              },
               body: JSON.stringify({ audio: base64, model: selectedModel }),
             });
             const r = response.body!.getReader();

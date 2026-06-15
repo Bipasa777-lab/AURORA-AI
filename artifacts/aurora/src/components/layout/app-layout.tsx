@@ -145,12 +145,12 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
       {/* Desktop Sidebar */}
       <aside className="hidden lg:flex flex-col w-64 border-r border-sidebar-border bg-sidebar fixed inset-y-0 left-0 z-40">
         <div className="flex items-center justify-between px-6 py-5 border-b border-sidebar-border">
-          <div className="flex items-center gap-3">
+          <Link href="/" className="flex items-center gap-3 cursor-pointer hover:opacity-90 transition-opacity">
             <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
               <Sparkles className="w-4 h-4 text-primary-foreground" />
             </div>
             <span className="font-bold text-lg tracking-tight text-sidebar-foreground">Aurora</span>
-          </div>
+          </Link>
           <NotificationBell />
         </div>
 
@@ -216,12 +216,12 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
 
       {/* Mobile Header */}
       <div className="lg:hidden fixed top-0 inset-x-0 z-50 flex items-center justify-between px-4 h-14 bg-background border-b border-border">
-        <div className="flex items-center gap-2">
+        <Link href="/" className="flex items-center gap-2 cursor-pointer hover:opacity-90 transition-opacity">
           <div className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center">
             <Sparkles className="w-3.5 h-3.5 text-primary-foreground" />
           </div>
-          <span className="font-bold text-base tracking-tight">Aurora</span>
-        </div>
+          <span className="font-bold text-base tracking-tight text-foreground">Aurora</span>
+        </Link>
         <div className="flex items-center gap-1">
           <NotificationBell className="text-foreground" />
           <Button

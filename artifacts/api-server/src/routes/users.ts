@@ -6,7 +6,7 @@ import { requireAuth, getOrCreateUser } from "../lib/auth";
 
 const router = Router();
 
-router.get("/me", requireAuth, async (req, res): Promise<void> => {
+router.get(["/me", "/profile"], requireAuth, async (req, res): Promise<void> => {
   const clerkId = (req as any).clerkId;
   const user = await getOrCreateUser(clerkId);
   res.json({
@@ -30,8 +30,8 @@ router.get("/me", requireAuth, async (req, res): Promise<void> => {
   });
 });
 
-router.put("/me", requireAuth, async (req, res): Promise<void> => {
-  const clerkId = (req as any).clerkId;
+const handleUpsertProfile = async (req: any, res: any): Promise<void> => {
+  const clerkId = req.clerkId;
   const parsed = UpsertProfileBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
@@ -79,6 +79,11 @@ router.put("/me", requireAuth, async (req, res): Promise<void> => {
     createdAt: updated.createdAt,
     updatedAt: updated.updatedAt,
   });
-});
+};
+
+router.put("/me", requireAuth, handleUpsertProfile);
+router.put("/profile", requireAuth, handleUpsertProfile);
+router.post("/me", requireAuth, handleUpsertProfile);
+router.post("/profile", requireAuth, handleUpsertProfile);
 
 export default router;

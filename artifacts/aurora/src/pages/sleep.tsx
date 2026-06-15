@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useListSleep, useCreateSleepLog, useDeleteSleepLog, useGetSleepAnalysis, getListSleepQueryKey, getGetSleepAnalysisQueryKey } from "@workspace/api-client-react";
+import { useState, useEffect } from "react";
+import { useListSleep, useCreateSleepLog, useDeleteSleepLog, useGetSleepAnalysis, getListSleepQueryKey, getGetSleepAnalysisQueryKey, useGetProfile, useUpsertProfile, getGetProfileQueryKey } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { AppLayout } from "@/components/layout/app-layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -22,11 +22,51 @@ export default function SleepPage() {
   const [quality, setQuality] = useState([7]);
   const [sleepDate, setSleepDate] = useState(yesterday);
   const [notes, setNotes] = useState("");
+  
+  // Sleep target targets
+  const [targetBedtime, setTargetBedtime] = useState("23:00");
+  const [targetWakeTime, setTargetWakeTime] = useState("07:00");
+  const [targetSleepGoal, setTargetSleepGoal] = useState("8");
+
   const { toast } = useToast();
   const qc = useQueryClient();
 
+  const { data: profile } = useGetProfile();
   const { data: analysis, isLoading: analysisLoading } = useGetSleepAnalysis();
   const { data: logs } = useListSleep({ limit: 14 });
+
+  useEffect(() => {
+    if (profile) {
+      setTargetBedtime(profile.bedtime || "23:00");
+      setTargetWakeTime(profile.wakeUpTime || "07:00");
+      setTargetSleepGoal(String(profile.dailySleepGoalHours || 8));
+      
+      // Default logging bedtime/waketime to schedule targets if not manually set
+      setBedtime(profile.bedtime || "22:30");
+      setWakeTime(profile.wakeUpTime || "06:30");
+    }
+  }, [profile]);
+
+  const upsertProfile = useUpsertProfile({
+    mutation: {
+      onSuccess: () => {
+        qc.invalidateQueries({ queryKey: getGetProfileQueryKey() });
+        toast({ title: "Sleep schedule updated! ✓" });
+      },
+    },
+  });
+
+  const handleSaveSchedule = (newBedtime: string, newWakeTime: string, newSleepGoal: string) => {
+    if (!profile) return;
+    upsertProfile.mutate({
+      data: {
+        ...profile,
+        bedtime: newBedtime,
+        wakeUpTime: newWakeTime,
+        dailySleepGoalHours: parseFloat(newSleepGoal) || 8,
+      },
+    });
+  };
 
   const create = useCreateSleepLog({
     mutation: {
@@ -49,7 +89,7 @@ export default function SleepPage() {
 
   const handleLog = () => {
     const bedtimeDate = new Date(`${sleepDate}T${bedtime}:00`);
-    const wakeDate = new Date(`${today}T${wakeTime}:00`);
+    const wakeDate = new Date(`${sleepDate}T${wakeTime}:00`);
     if (wakeDate <= bedtimeDate) wakeDate.setDate(wakeDate.getDate() + 1);
 
     create.mutate({
@@ -117,6 +157,56 @@ export default function SleepPage() {
                     )}
                   </div>
                 )}
+              </CardContent>
+            </Card>
+            <Card className="border border-border/50 bg-card/60 backdrop-blur-md shadow-sm">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base flex items-center justify-between">
+                  <span className="flex items-center gap-1.5"><Sparkles className="w-4 h-4 text-purple-500 animate-pulse" />Sleep Schedule</span>
+                  <Badge variant="outline" className="border-purple-200 text-purple-700 bg-purple-50/50 dark:bg-purple-950/20">Target</Badge>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <Label className="text-xs text-muted-foreground">Bedtime Target</Label>
+                    <Input
+                      type="time"
+                      value={targetBedtime}
+                      onChange={e => setTargetBedtime(e.target.value)}
+                      className="bg-background/80"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs text-muted-foreground">Wake-up Target</Label>
+                    <Input
+                      type="time"
+                      value={targetWakeTime}
+                      onChange={e => setTargetWakeTime(e.target.value)}
+                      className="bg-background/80"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">Daily Target (Hours)</Label>
+                  <Input
+                    type="number"
+                    step="0.5"
+                    min="4"
+                    max="12"
+                    value={targetSleepGoal}
+                    onChange={e => setTargetSleepGoal(e.target.value)}
+                    className="bg-background/80"
+                  />
+                </div>
+                <Button 
+                  size="sm" 
+                  onClick={() => handleSaveSchedule(targetBedtime, targetWakeTime, targetSleepGoal)}
+                  disabled={upsertProfile.isPending}
+                  className="w-full text-xs font-semibold bg-purple-600 hover:bg-purple-700 text-white rounded-lg h-9 shadow-sm shadow-purple-500/20 transition-all duration-200"
+                >
+                  {upsertProfile.isPending ? "Saving..." : "Update Schedule"}
+                </Button>
               </CardContent>
             </Card>
           </div>

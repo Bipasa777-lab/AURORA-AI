@@ -41,7 +41,7 @@ router.get("/nutrition/today", requireAuth, async (req, res): Promise<void> => {
   });
 });
 
-router.get("/meals", requireAuth, async (req, res): Promise<void> => {
+router.get(["/meals", "/nutrition"], requireAuth, async (req, res): Promise<void> => {
   const clerkId = (req as any).clerkId;
   const user = await getOrCreateUser(clerkId);
 
@@ -66,7 +66,7 @@ router.get("/meals", requireAuth, async (req, res): Promise<void> => {
   res.json(meals);
 });
 
-router.post("/meals", requireAuth, async (req, res): Promise<void> => {
+router.post(["/meals", "/nutrition"], requireAuth, async (req, res): Promise<void> => {
   const clerkId = (req as any).clerkId;
   const user = await getOrCreateUser(clerkId);
   const parsed = CreateMealLogBody.safeParse(req.body);
@@ -93,7 +93,7 @@ router.post("/meals", requireAuth, async (req, res): Promise<void> => {
   res.status(201).json(meal);
 });
 
-router.patch("/meals/:id", requireAuth, async (req, res): Promise<void> => {
+const handleUpdateMeal = async (req: any, res: any): Promise<void> => {
   const clerkId = (req as any).clerkId;
   const user = await getOrCreateUser(clerkId);
   const rawId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
@@ -115,9 +115,14 @@ router.patch("/meals/:id", requireAuth, async (req, res): Promise<void> => {
     return;
   }
   res.json(updated);
-});
+};
 
-router.delete("/meals/:id", requireAuth, async (req, res): Promise<void> => {
+router.patch("/meals/:id", requireAuth, handleUpdateMeal);
+router.patch("/nutrition/:id", requireAuth, handleUpdateMeal);
+router.put("/meals/:id", requireAuth, handleUpdateMeal);
+router.put("/nutrition/:id", requireAuth, handleUpdateMeal);
+
+router.delete(["/meals/:id", "/nutrition/:id"], requireAuth, async (req, res): Promise<void> => {
   const clerkId = (req as any).clerkId;
   const user = await getOrCreateUser(clerkId);
   const rawId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
