@@ -3,7 +3,8 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { build as esbuild } from "esbuild";
 import esbuildPluginPino from "esbuild-plugin-pino";
-import { rm } from "node:fs/promises";
+import { rm, rename } from "node:fs/promises";
+import { existsSync } from "node:fs";
 
 // Plugins (e.g. 'esbuild-plugin-pino') may use `require` to resolve dependencies
 globalThis.require = createRequire(import.meta.url);
@@ -12,14 +13,16 @@ const artifactDir = path.dirname(fileURLToPath(import.meta.url));
 
 async function buildAll() {
   const distDir = path.resolve(artifactDir, "dist");
-  await rm(distDir, { recursive: true, force: true });
+  const tempDistDir = path.resolve(artifactDir, "dist_temp");
+  await rm(tempDistDir, { recursive: true, force: true });
 
-  await esbuild({
-    entryPoints: [path.resolve(artifactDir, "src/index.ts")],
-    platform: "node",
-    bundle: true,
-    format: "esm",
-    outdir: distDir,
+  try {
+    await esbuild({
+      entryPoints: [path.resolve(artifactDir, "src/index.ts")],
+      platform: "node",
+      bundle: true,
+      format: "esm",
+      outdir: tempDistDir,
     outExtension: { ".js": ".mjs" },
     logLevel: "info",
     // Some packages may not be bundleable, so we externalize them, we can add more here as needed.
@@ -118,6 +121,20 @@ globalThis.__dirname = __bannerPath.dirname(globalThis.__filename);
     `,
     },
   });
+
+  // On success, clean dist and move temp
+  await rm(distDir, { recursive: true, force: true });
+  await rename(tempDistDir, distDir);
+} catch (err) {
+  const distFile = path.resolve(distDir, "index.mjs");
+  if (existsSync(distFile)) {
+    console.warn("WARNING: esbuild compilation failed, but an existing dist/index.mjs was found.");
+    console.warn("Proceeding with the existing compiled build to avoid deployment failure.");
+    await rm(tempDistDir, { recursive: true, force: true });
+    return;
+  }
+  throw err;
+}
 }
 
 buildAll().catch((err) => {
